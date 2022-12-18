@@ -29,8 +29,6 @@ services:
       - "traefik.http.middlewares.dashboard-stripprefix.stripprefix.prefixes=/traefik"
       - "traefik.http.middlewares.dashboard-basicauth.basicauth.usersfile=/users"
       - "traefik.http.routers.traefik-dashboard.service=api@internal"
-    env_file:
-      - ../root.env
 networks:
   front:
     external: true
