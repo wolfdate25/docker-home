@@ -24,8 +24,8 @@ services:
       - "./rpc.env"
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=websecure"
-      - "traefik.http.routers.aria2.entrypoints=https"
+      - "traefik.docker.network=front"
+      - "traefik.http.routers.aria2.entrypoints=websecure"
       - "traefik.http.routers.aria2.rule=Host(`${TRF_DOMAIN}`) && PathPrefix(`/aria2`)"
       - "traefik.http.routers.aria2.tls=true"
       - "traefik.http.routers.aria2.tls.certresolver=leresolver"
@@ -50,7 +50,7 @@ services:
       - ./AriaNg/nginx.conf:/etc/nginx/nginx.conf/:ro
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=frontend"
+      - "traefik.docker.network=front"
       - "traefik.http.routers.ariang.entrypoints=websecure"
       - "traefik.http.routers.ariang.rule=Host(`${TRF_DOMAIN}`) && PathPrefix(`/ariang`)"
       - "traefik.http.routers.ariang.tls=true"
