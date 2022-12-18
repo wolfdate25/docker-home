@@ -1,0 +1,29 @@
+api:
+  dashboard: true
+providers:
+  docker:
+    endpoint: "unix:///var/run/docker.sock"
+    exposedByDefault: false
+entryPoints:
+  websecure:
+    address: ':443'
+  web:
+    address: ':80'
+    http:
+      redirections:
+        entrypoint:
+          to: websecure
+          scheme: https
+certificatesResolvers:
+  leresolver:
+    acme:
+      email: "wolfdate25@gmail.com"
+      storage: "/acme.json"
+      dnschallenge:
+        provider: "duckdns"
+        delaybeforecheck: 10
+        resolvers:
+          - "1.1.1.1:53"
+          - "8.8.8.8:53"
+serverTransport:
+  insecureSkipVerify: true

@@ -1,0 +1,36 @@
+services:
+  traefik:
+    image: traefik:latest
+    container_name: traefik
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    command:
+      - "--configFile=/etc/traefik/traefik.yaml"
+      - "--log.level=INFO" # DEBUG
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "./acme.json:/acme.json"
+      - "./acme:/etc/traefik/acme"
+      - "./users:/users:ro"
+      - "./traefik.yaml:/etc/traefik/traefik.yaml:ro"
+    environment:
+      - "DUCKDNS_TOKEN=${DUCKDNS_TOKEN}"
+    networks:
+      - front
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.traefik-dashboard.entryPoints=websecure"
+      - "traefik.http.routers.traefik-dashboard.rule=Host(`${TRF_DOMAIN}`) && (PathPrefix(`/traefik`) || PathPrefix(`/api`))"
+      - "traefik.http.routers.traefik-dashboard.tls=true"
+      - "traefik.http.routers.traefik-dashboard.tls.certResolver=leresolver"
+      - "traefik.http.routers.traefik-dashboard.middlewares=dashboard-stripprefix, dashboard-basicauth"
+      - "traefik.http.middlewares.dashboard-stripprefix.stripprefix.prefixes=/traefik"
+      - "traefik.http.middlewares.dashboard-basicauth.basicauth.usersfile=/users"
+      - "traefik.http.routers.traefik-dashboard.service=api@internal"
+    env_file:
+      - ../root.env
+networks:
+  front:
+    external: true
