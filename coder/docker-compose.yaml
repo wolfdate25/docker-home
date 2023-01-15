@@ -16,6 +16,7 @@ services:
       # that workspaces can reach. This cannot be localhost
       # or 127.0.0.1 for non-Docker templates!
       CODER_ACCESS_URL: "${CODER_ACCESS_URL}"
+      CODER_WILDCARD_ACCESS_URL: "*.${CODER_DOMAIN}"
     # If the coder user does not have write permissions on
     # the docker socket, you can uncomment the following
     # lines and set the group ID to one that has write
@@ -34,7 +35,7 @@ services:
       - "traefik.enable=true"
       - "traefik.docker.network=front"
       - "traefik.http.routers.coder.entrypoints=websecure"
-      - "traefik.http.routers.coder.rule=Host(`${CODER_DOMAIN}`)"
+      - "traefik.http.routers.coder.rule=HostRegexp(`${CODER_DOMAIN}`, `{subdomain:[a-z0-9-]+}.${CODER_DOMAIN}`)"
       - "traefik.http.routers.coder.tls=true"
       - "traefik.http.routers.coder.tls.certresolver=leresolver"
       - "traefik.http.services.coder.loadbalancer.server.port=7080"
