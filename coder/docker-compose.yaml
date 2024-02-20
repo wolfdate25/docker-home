@@ -5,13 +5,11 @@ services:
     # other automations.
     image: ghcr.io/coder/coder:${CODER_VERSION:-latest}
     restart: unless-stopped
-    ports:
-      - "7080:7080"
-    group_add:
-      - "471"
+    # ports:
+    #   - "7080:7080"
     environment:
       CODER_PG_CONNECTION_URL: "postgresql://${POSTGRES_USER:-username}:${POSTGRES_PASSWORD:-password}@database/${POSTGRES_DB:-coder}?sslmode=disable"
-      CODER_ADDRESS: "0.0.0.0:7080"
+      CODER_HTTP_ADDRESS: "0.0.0.0:7080"
       # You'll need to set CODER_ACCESS_URL to an IP or domain
       # that workspaces can reach. This cannot be localhost
       # or 127.0.0.1 for non-Docker templates!
@@ -21,19 +19,19 @@ services:
     # the docker socket, you can uncomment the following
     # lines and set the group ID to one that has write
     # permissions on the docker socket.
-    #group_add:
-    #  - "998" # docker group on host
+    group_add:
+      - "972" # docker group on host
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
-      - front
+      - proxy
       - db
     depends_on:
       database:
         condition: service_healthy
     labels:
       - "traefik.enable=true"
-      - "traefik.docker.network=front"
+      - "traefik.docker.network=proxy"
       - "traefik.http.routers.coder.entrypoints=websecure"
       - "traefik.http.routers.coder.rule=HostRegexp(`${CODER_DOMAIN}`, `{subdomain:[a-z0-9-]+}.${CODER_DOMAIN}`)"
       - "traefik.http.routers.coder.tls=true"
@@ -42,8 +40,9 @@ services:
 
   database:
     image: "postgres:14.2"
-    ports:
-      - "5432:5432"
+    restart: unless-stopped
+    # ports:
+    #   - "5432:5432"
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-username} # The PostgreSQL user (useful to connect to the database)
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-password} # The PostgreSQL password (useful to connect to the database)
@@ -56,13 +55,14 @@ services:
       test:
         [
           "CMD-SHELL",
-          "pg_isready -U ${POSTGRES_USER:-username} -d ${POSTGRES_DB:-coder}",
+          "pg_isready -U ${POSTGRES_USER:-username} -d ${POSTGRES_DB:-coder}"
         ]
       interval: 5s
       timeout: 5s
       retries: 5
 
 networks:
-  front:
+  proxy:
     external: true
   db:
+    external: false
